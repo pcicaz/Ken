@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jms="http://www.springframework.org/schema/jms"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/jms http://www.springframework.org/schema/jms/spring-jms.xsd">
+
+    <!-- Queue Listener -->
+    <!--<bean id="messageListener" class="com.csczn.activemq.spring.MyMessageListener"/>-->
+    <bean id="queueListener"
+          class="org.springframework.jms.listener.adapter.MessageListenerAdapter">
+        <constructor-arg>
+            <bean class="com.csczn.activemq.spring.MyQueueConsumer">
+            </bean>
+        </constructor-arg>
+        <property name="defaultListenerMethod" value="onMessage"/>
+        <!--<property name="messageConverter" ref="messageConverter"/>-->
+    </bean>
+    <!--<jms:listener-container>
+        <jms:listener destination="testQueue" ref="messageListener"/>
+    </jms:listener-container>-->
+
+    <bean class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="pooledConnectionFactory"/>
+        <property name="destination" ref="testQueue"/>
+        <property name="messageListener" ref="queueListener"/>
+    </bean>
+
+    <!-- Topic Listener -->
+    <bean id="topicListener"
+          class="org.springframework.jms.listener.adapter.MessageListenerAdapter">
+        <constructor-arg>
+            <bean class="com.csczn.activemq.spring.MyTopicSubscriber">
+            </bean>
+        </constructor-arg>
+        <property name="defaultListenerMethod" value="onMessage"/>
+        <!--<property name="messageConverter" ref="messageConverter"/>-->
+    </bean>
+
+    <!--<bean class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="pooledConnectionFactory"/>
+        <property name="destination" ref="testTopic"/>
+        <property name="messageListener" ref="topicListener"/>
+    </bean>-->
+
+
+</beans>

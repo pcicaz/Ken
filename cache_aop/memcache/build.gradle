@@ -1,0 +1,19 @@
+apply plugin: 'java'
+
+sourceCompatibility = 1.7
+version = '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile(
+            'commons-logging:commons-logging:1.2',
+            'commons-lang:commons-lang:2.6',
+            'org.springframework:spring-core:3.2.10.RELEASE',
+            'org.springframework:spring-context:3.2.10.RELEASE',
+            'org.springframework:spring-aop:3.2.10.RELEASE',
+            'org.aspectj:aspectjrt:1.7.3',
+    )
+}

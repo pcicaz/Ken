@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+       <bean id="tcpConnector" class="org.apache.activemq.broker.TransportConnector">
+              <property name="uri" value="tcp://localhost:61616?trace=true&keepAlive=true"></property>
+       </bean>
+
+       <bean id="kahaPersistenceAdapter"
+             class="org.apache.activemq.store.kahadb.KahaDBPersistenceAdapter">
+              <property name="persistentIndex" value="true"></property>
+              <property name="maxDataFileLength" value="1048576"></property>
+       </bean>
+
+       <bean id="kahaDBPersistenceAdapter"
+             class="org.apache.activemq.store.kahadb.KahaDBPersistenceAdapter">
+              <property name="checkForCorruptJournalFiles" value="true"></property>
+              <property name="checkpointInterval" value="5000"></property>
+              <property name="checksumJournalFiles" value="true"></property>
+              <property name="cleanupInterval" value="30000"></property>
+              <property name="directory" value="activemq-data"></property>
+              <property name="enableIndexWriteAsync" value="true"></property>
+              <property name="enableJournalDiskSyncs" value="true"></property>
+              <property name="ignoreMissingJournalfiles" value="false"></property>
+              <property name="indexCacheSize" value="100"></property>
+              <property name="journalMaxFileLength" value="1048576"></property>
+              <property name="journalMaxWriteBatchSize" value="1000"></property>
+       </bean>
+
+       <bean id="brokerService" class="org.apache.activemq.broker.BrokerService"
+             init-method="start" destroy-method="stop" scope="singleton">
+              <property name="brokerName" value="${broker.tcp.local.name}"></property>
+              <property name="useJmx" value="false"></property>
+              <property name="persistenceAdapter" ref="kahaPersistenceAdapter"></property>
+              <property name="transportConnectors">
+                     <list>
+                            <ref local="tcpConnector" />
+                     </list>
+              </property>
+              <property name="destinations">
+                     <set>
+                            <ref local="tcpQueue" />
+                     </set>
+              </property>
+              <property name="plugins">
+                     <set>
+                            <ref local="loggingBrokerPlugin" />
+                            <ref local="destinationDotFilePlugin" />
+                            <ref local="statisticsBrokerPlugin" />
+                     </set>
+              </property>
+       </bean>
+</beans>

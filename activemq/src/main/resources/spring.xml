@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+    <context:component-scan base-package="com.csczn.activemq.spring"/>
+
+    <bean id="queue" class="org.apache.activemq.command.ActiveMQQueue">
+        <constructor-arg value="test.queue"/>
+    </bean>
+
+    <bean id="testQueue" class="org.apache.activemq.command.ActiveMQQueue">
+        <property name="physicalName" value="test.queue"/>
+    </bean>
+
+    <bean id="testTopic" class="org.apache.activemq.command.ActiveMQTopic">
+        <constructor-arg value="test.topic"/>
+    </bean>
+
+    <bean id="pooledConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory">
+        <property name="connectionFactory">
+            <bean class="org.apache.activemq.spring.ActiveMQConnectionFactory">
+                <!--<property name="brokerURL" value="tcp://192.168.1.253:61616"/>-->
+                <property name="brokerURL" value="failover:(tcp://192.168.1.253:61616,tcp://192.168.1.253:61617,tcp://192.168.1.253:61618)?initialReconnectDelay=100" />
+            </bean>
+        </property>
+    </bean>
+
+    <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="pooledConnectionFactory"/>
+        <!--<property name="messageConverter" ref="messageConverter"/>-->
+    </bean>
+
+    <bean id="transactedJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="pooledConnectionFactory"/>
+        <property name="sessionTransacted" value="true"/>
+        <!--<property name="messageConverter" ref="messageConverter"/>-->
+    </bean>
+    <bean id="messageConverter" class="com.csczn.activemq.spring.MyMessageConverter"/>
+    <bean id="transactionManager" class="org.springframework.jms.connection.JmsTransactionManager">
+        <property name="connectionFactory" ref="pooledConnectionFactory"/>
+    </bean>
+
+</beans>
