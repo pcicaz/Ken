@@ -1,6 +1,6 @@
 apply plugin: 'war'
 apply plugin: 'eclipse-wtp'
-apply plugin: 'jetty'
+apply plugin: 'com.bmuschko.tomcat'
 
 repositories {
     maven {
@@ -8,15 +8,32 @@ repositories {
     }
 }
 
+buildscript {
+    repositories {
+        jcenter()
+    }
 
-//jetty
-[jettyRun, jettyRunWar, jettyStop]*.stopPort = 9966
-[jettyRun, jettyRunWar, jettyStop]*.stopKey = 'stopKey'
+    dependencies {
+        classpath 'com.bmuschko:gradle-tomcat-plugin:2.2.2'
+    }
+}
+
+tomcat {
+    httpPort = 80
+    httpsPort = 8443
+    enableSSL = true
+}
+[tomcatRun, tomcatRunWar, tomcatStop]*.stopPort = 8081
+[tomcatRun, tomcatRunWar, tomcatStop]*.stopKey = 'stopKey'
 
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
 dependencies {
-           
+    def tomcatVersion = '7.0.59'
+    tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
+           "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatVersion}",
+           "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
+
     compile( 
         'org.apache.activemq:activemq-all:5.11.1',
         'org.springframework:spring-jms:3.2.4.RELEASE',
