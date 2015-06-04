@@ -1,0 +1,262 @@
+<title>Add/Edit User - Ace Admin</title>
+<script>
+    var username = $.getParam("username");
+    var isEditMode = username != null && username != "";
+</script>
+
+<link rel="stylesheet" href="/assets/css/select2.css"/>
+<link rel="stylesheet" href="/assets/css/datepicker.css"/>
+
+<div class="page-header">
+    <h1>
+        <a href="#page/user">User</a>
+        <small>
+            <i class="ace-icon fa fa-angle-double-right"></i>
+            <span>Add/Edit User</span>
+        </small>
+    </h1>
+</div>
+<!-- ajax layout which only needs content area -->
+<div class="row">
+    <div class="col-xs-12">
+        <!-- PAGE CONTENT BEGINS -->
+        <form id="validation-form" class="form-horizontal" role="form">
+
+
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right" for="username">username:</label>
+
+                <div class="col-xs-12 col-sm-9">
+                    <div class="clearfix">
+                        <input type="text" id="username" name="username" class="col-xs-12 col-sm-3"/>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right" for="password">password:</label>
+
+                <div class="col-xs-12 col-sm-9">
+                    <div class="clearfix">
+                        <input type="password" id="password" name="password" class="col-xs-12 col-sm-3"/>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right">Gender</label>
+
+                <div class="col-xs-12 col-sm-9">
+                    <div>
+                        <label class="line-height-1 blue">
+                            <input name="gender" value="M" type="radio" class="ace"/>
+                            <span class="lbl"> Male</span>
+                        </label>
+                    </div>
+
+                    <div>
+                        <label class="line-height-1 blue">
+                            <input name="gender" value="F" type="radio" class="ace"/>
+                            <span class="lbl"> Female</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right" for="birthday">生日:</label>
+
+                <div class="col-xs-12 col-sm-3">
+                    <div class="input-group">
+                        <input class="form-control date-picker col-xs-12 col-sm-3" id="birthday" type="text"
+                               name="birthday"
+                               data-date-format="mm/dd/yyyy"/>
+											<span class="input-group-addon">
+												<i class="fa fa-calendar bigger-110"></i>
+											</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right" for="province">Province:</label>
+
+                <div class="col-xs-12 col-sm-9">
+                    <select id="province" name="province" class="select2" data-placeholder="Click to choose">
+                        <option value="">&nbsp;</option>
+                        <option value="AH">Anhui</option>
+                        <option value="JS">Jiangsu</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right" for="description">Description</label>
+
+                <div class="col-xs-12 col-sm-9">
+                    <div class="clearfix">
+                        <textarea class="input-xlarge" name="description" id="description" maxlength="200"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="clearfix form-group">
+                <div class="col-md-offset-3 col-md-9">
+                    <button class="btn btn-info" type="submit">
+                        <i class="ace-icon fa fa-check bigger-110"></i>
+                        Submit
+                    </button>
+
+                    &nbsp; &nbsp; &nbsp;
+                    <button class="btn" type="reset">
+                        <i class="ace-icon fa fa-undo bigger-110"></i>
+                        Reset
+                    </button>
+                </div>
+            </div>
+        </form>
+        <!-- PAGE CONTENT ENDS -->
+    </div>
+    <!-- /.col -->
+</div><!-- /.row -->
+
+<!-- page specific plugin scripts -->
+<script type="text/javascript">
+    var scripts = ["/assets/js/jquery.validate.js",
+        "/assets/js/additional-methods.js",
+        "./assets/js/date-time/bootstrap-datepicker.js",
+        "/assets/js/select2.js",
+        "/assets/js/json2.js",
+        "/assets/js/bootbox.js"
+    ];
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        if (isEditMode) {
+            $('title').html("Edit User - Ace admin");
+            $('.page-header span').text("Edit User");
+            $.request({
+                type: "GET",
+                url: "/user/" + username,
+                success: function (resp) {
+                    if (!resp.success) {
+                        alert(resp.message);
+                    } else {
+                        var user = resp.obj;
+                        $('#username').val(user.username);
+                        $('#password').val(user.password);
+                        $(':radio[name=gender][value=' + user.gender + ']').trigger("click");
+                        var birthday = "";
+                        if (user.birthday != null) {
+                            try {
+                                birthday = new Date(user.birthday).toLocaleDateString();
+                            } catch (e) {
+                            }
+                        }
+                        $('#birthday').val(birthday).trigger("keyup");
+                        $('#province').val(user.province).trigger("change");
+                        $('#description').val(user.description);
+                    }
+                }
+            });
+        } else {
+            $('title').html("Add User - Ace admin");
+            $('.page-header span').text("Add User");
+        }
+
+        $(".select2").css('width', '200px').select2({
+            allowClear: true
+        }).on('change', function () {
+            $(this).closest('form').validate().element($(this));
+        });
+
+        $('.date-picker').datepicker({
+            language: 'zh',
+            autoclose: true,
+            todayHighlight: true
+        }).on('change', function () {
+            $(this).closest('form').validate().element($(this));
+        }).on('changeDate', function (ev) {
+            console.log(ev.date)
+        }).next().on(ace.click_event, function () {//show datepicker when clicking on the icon
+            $(this).prev().focus();
+        });
+
+        $('#validation-form').validate({
+            errorElement: 'div',
+            errorClass: 'help-block',
+            focusInvalid: false,
+            ignore: "",
+            rules: {
+                username: {
+                    required: true
+                },
+                gender: {
+                    required: true
+                },
+                birthday: {
+                    required: true
+                },
+                province: "required",
+                description: {
+                    minlength: 5,
+                    maxlength: 200
+                }
+            },
+            messages: {
+                username: "Please input username",
+                password: "Please input password",
+                gender: "Please choose gender",
+                birthday: "Please pick birthday",
+                province: "Please choose province",
+                description: {
+                    minlength: "At least 5 letters.",
+                    maxlength: "最多200字."
+                }
+            },
+            highlight: function (e) {
+                $(e).closest('.form-group').removeClass('has-info').addClass('has-error');
+            },
+            success: function (e) {
+                $(e).closest('.form-group').removeClass('has-error');//.addClass('has-info');
+                $(e).remove();
+            },
+            errorPlacement: function (error, element) {
+                if (element.is('input[type=checkbox]') || element.is('input[type=radio]')) {
+                    var controls = element.closest('div[class*="col-"]');
+                    if (controls.find(':checkbox,:radio').length > 1) controls.append(error);
+                    else error.insertAfter(element.nextAll('.lbl:eq(0)').eq(0));
+                }
+                else if (element.is('.select2')) {
+                    error.insertAfter(element.siblings('[class*="select2-container"]:eq(0)'));
+                }
+                else if (element.is('.chosen-select')) {
+                    error.insertAfter(element.siblings('[class*="chosen-container"]:eq(0)'));
+                }
+                else error.insertAfter(element.parent());
+            },
+            submitHandler: function (form) {
+                var data = $(form).serializeArray();
+                var url = "/user";
+                if (isEditMode) {
+                    data.push({name: "_method", value: "PUT"});
+                    url = "/user/" + username;
+                }
+                $.request({
+                    type: "POST",
+                    url: url,
+                    data: data,
+                    success: function (resp) {
+                        $.handleResp({
+                            response: resp,
+                            success: function () {
+                                location.href = "#page/user";
+                            },
+                            unknown: function(resp) {
+                                alert(resp.message)
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    });
+</script>

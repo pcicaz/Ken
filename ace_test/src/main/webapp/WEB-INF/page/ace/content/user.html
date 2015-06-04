@@ -1,0 +1,363 @@
+<title>User - Ace Admin</title>
+
+<!-- ajax layout which only needs content area -->
+<div class="page-header">
+    <h1>
+        User
+        <small>
+            <i class="ace-icon fa fa-angle-double-right"></i>
+            Manager
+        </small>
+    </h1>
+</div><!-- /.page-header -->
+
+<div class="row">
+    <div class="col-xs-12">
+        <!-- PAGE CONTENT BEGINS -->
+        <form class="form-horizontal" role="form">
+            <!-- #section:elements.form -->
+            <div class="form-group">
+                <label class="col-sm-3 control-label no-padding-right" for="username"> Username </label>
+
+                <div class="col-sm-9">
+                    <input type="text" id="username" placeholder="Username" class="col-xs-10 col-sm-5"/>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-3 control-label no-padding-right" for="password"> Password </label>
+
+                <div class="col-sm-9">
+                    <input type="text" id="password" placeholder="Password" class="col-xs-10 col-sm-5"/>
+                </div>
+            </div>
+
+            <div class="clearfix form-group">
+                <div class="col-md-offset-3 col-md-9">
+                    <button id="commit" class="btn btn-info" type="button">
+                        <i class="ace-icon fa fa-search bigger-110"></i>
+                        Search
+                    </button>
+
+                    &nbsp; &nbsp; &nbsp;
+                    <button class="btn" type="reset">
+                        <i class="ace-icon fa fa-undo bigger-110"></i>
+                        Reset
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <div class="hr hr-18 dotted hr-double"></div>
+
+        <div class="row">
+            <div class="col-xs-12">
+                <!-- div.table-responsive -->
+
+                <!--<h3 class="header smaller lighter blue">jQuery dataTables</h3>-->
+
+                <div class="clearfix">
+                    <!--<div class="pull-left tableTools-container"></div>-->
+                    <div class="pull-left">
+                        <div class="btn-group btn-overlap">
+                            <a id="add" href="#page/opUser" class="btn btn-white btn-primary btn-bold"
+                               tabindex="0" aria-controls="user-table">
+                                <span>
+                                    <i class="fa fa-plus bigger-110 green"></i>
+                                </span>
+                            </a>
+                            <a id="multiDelete" class="btn btn-white btn-primary btn-bold"
+                               tabindex="0" aria-controls="user-table">
+                                <span>
+                                    <i class="fa fa-trash bigger-110 pink"></i>
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-header">
+                    Results for "Users"
+                </div>
+                <!-- div.dataTables_borderWrap -->
+                <div>
+                    <table id="user-table" class="table table-striped table-bordered table-hover">
+                        <thead>
+                        <tr>
+                            <th width="10px" class="center">
+                                <label class="pos-rel">
+                                    <input type="checkbox" class="ace"/>
+                                    <span class="lbl"></span>
+                                </label>
+                            </th>
+                            <th>Username</th>
+                            <th>Password</th>
+                            <th>Gender</th>
+                            <th>Birthday</th>
+                            <th class="hidden-480">Province</th>
+                            <th class="hidden-480">Description</th>
+                            <th width="100px">Operation</th>
+                        </tr>
+                        </thead>
+
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE CONTENT ENDS -->
+    </div>
+    <!-- /.col -->
+</div><!-- /.row -->
+
+<!-- page specific plugin scripts -->
+<script type="text/javascript">
+    var scripts = [
+        "/assets/js/dataTables/jquery.dataTables.js",
+        "/assets/js/dataTables/jquery.dataTables.bootstrap.js",
+        "/assets/js/date-time/bootstrap-datepicker.js",
+        "/assets/js/bootbox.js"
+    ];
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        //inline scripts related to this page
+        jQuery(function ($) {
+            $("#commit").click(function () {
+                userTable.fnFilter();   //刷新table
+            });
+
+            var $table = $('#user-table');
+
+            var userTable = $table.dataTable({
+                paging: true,       //开启分页
+                processing: true,   //开启显示处理中信息
+                serverSide: true,   //开启server端处理数据
+                ordering: true,     //开启排序
+                searching: false,   //关闭过滤
+                autoWidth: true,    //开启自动调整宽度
+                displayStart: 0,    //首次分页起始
+                pageLength: 10,     //分页长度
+                pagingType: 'full_numbers',     //显示分页信息的方式
+                sAjaxSource: '/user',           //远程请求URL
+                fnServerParams: function (data) {   //搜索参数组装
+                    data.push(
+                            {"name": "username", "value": $("#username").val()},
+                            {"name": "password", "value": $("#password").val()}
+                    );
+                },
+                fnServerData: function (source, data, callback) {   //请求server数据
+                    $.request({//默认method为GET
+                        url: source,
+                        data: data,
+                        success: function (resp) {
+                            $.handleResp({  //处理response
+                                response: resp,
+                                success: function (res) {
+                                    callback(res.obj);   //调用datatable回调
+                                }
+                            });
+                        }
+                    });
+                },
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],    //分页长度选项设置
+                columns: [
+                    {
+                        render: function () {   //渲染列
+                            return '<label class="pos-rel">\
+								<input type="checkbox" class="ace" />\
+								<span class="lbl"></span>\
+								</label>';
+                        }
+                    },
+                    {data: "username"},
+                    {data: "password"},
+                    {
+                        data: "gender",     //设置列数据
+                        render: function (data) { //根据列数据渲染
+                            return data == "M" ? "Male" : "Female";
+                        }
+                    },
+                    {
+                        data: "birthday",
+                        render: function (data) {
+                            var birthday = "";
+                            if (data != null) {
+                                try {
+                                    birthday = new Date(data).toLocaleDateString();
+                                } catch (e) {
+                                }
+                            }
+                            return birthday;
+                        }
+                    },
+                    {data: "province"},
+                    {data: "description"},
+                    {defaultContent: ""}    //默认值
+                ],
+                columnDefs: [
+                    {targets: [0, 7], orderable: false}     //设置不排序的列
+                ],
+                order: [
+                    [1, 'asc']      //默认排序列
+                ],
+                "createdRow": function (row, data, index) {     //行渲染完成后的回调
+
+                    $(row).click(function () {
+                        toggleRow($(row));
+                    });
+
+                    $(row).find(':checkbox').click(function () {
+                        toggleRow($(row));
+                    });
+
+                    $(row).attr('id', data.username);
+
+                    $('td:eq(5)', row).addClass("hidden-480");
+                    $('td:eq(6)', row).addClass("hidden-480");
+
+                    //添加按钮
+                    var html = '<div class="hidden-sm hidden-xs action-buttons">\
+                                    <a class="blue" href="#page/opUser?username=' + data.username + '">\
+                                        <i class="ace-icon fa fa-pencil bigger-130"></i>\
+                                    </a>\
+                                    <a class="red" href="#">\
+                                        <i class="ace-icon fa fa-trash-o bigger-130"></i>\
+                                    </a>\
+                                </div>';
+                    $('td:eq(7)', row).html(html);
+                    return row;
+                },
+                "drawCallback": function () {   //table渲染完成后的回调
+                    $table.find(':checkbox').prop('checked', false);
+
+                    $table.find('> tbody > tr > td .fa-trash-o').parent().click(function (e) {
+                        $obj = $(this);
+                        bootbox.dialog({        //bootbox 插件
+                            title: "警告",
+                            message: "确定删除此记录吗?",
+                            buttons: {
+                                danger: {
+                                    label: "确定",
+                                    className: "btn-sm btn-danger",
+                                    callback: function () {
+                                        $.request({
+                                            type: "DELETE",
+                                            url: "/user/" + $obj.parents("tr").attr("id"),
+                                            success: function (resp) {
+                                                $.handleResp({
+                                                    response: resp,
+                                                    success: function () {
+                                                        userTable.fnFilter();
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    }
+                                },
+                                main: {
+                                    label: '取消',
+                                    className: "btn-sm btn-default",
+                                    callback: null
+                                }
+                            }
+                        });
+                        e.preventDefault();
+                    });
+                },
+                language: {
+                    sProcessing: "加载数据中...",
+                    sLengthMenu: "每页显示 _MENU_ 条记录",
+                    sInfo: "_START_ - _END_ / _TOTAL_",
+                    sInfoEmpty: "没有数据",
+                    sInfoFiltered: "",
+                    sZeroRecords: "没有检索到数据",
+                    sSearch: "模糊查询:  ",
+                    oPaginate: {
+                        sFirst: "首页",
+                        sPrevious: "上页",
+                        sNext: "下页",
+                        sLast: "尾页"
+                    }
+                }
+            });
+
+
+            var toggleRow = function ($row) {
+                if (!$row.hasClass("success")) {
+                    $row.addClass("success").find(':checkbox').eq(0).prop('checked', true);
+                } else {
+                    $row.removeClass("success").find(':checkbox').eq(0).prop('checked', false);
+                }
+            };
+
+            var selectedArray = function () {
+                var array = [];
+                $table.find('> tbody > tr > td :checkbox:checked').each(function () {
+                    var $row = $(this).closest('tr');
+                    array.push($row.attr("id"));
+                });
+                return array;
+            };
+
+            $table.find('> thead > tr > th :checkbox').eq(0).on('click', function () {
+                var th_checked = this.checked;
+
+                $(this).closest('table').find('tbody > tr').each(function () {
+                    var $row = $(this);
+                    if (th_checked) {
+                        $row.addClass("success").find('input[type=checkbox]').eq(0).prop('checked', true);
+                    } else {
+                        $row.removeClass("success").find('input[type=checkbox]').eq(0).prop('checked', false);
+                    }
+                });
+            });
+
+            $('#multiDelete').click(function () {
+                var array = selectedArray();
+                if (array.length > 0) {
+                    bootbox.dialog({
+                        title: "警告",
+                        message: "确定删除此记录吗?",
+                        buttons: {
+                            danger: {
+                                label: "确定",
+                                className: "btn-sm btn-danger",
+                                callback: function () {
+                                    $.request({
+                                        type: "DELETE",
+                                        url: '/user',
+                                        data: {array: array},
+                                        traditional: true,
+                                        success: function (resp) {
+                                            $.handleResp({
+                                                response: resp,
+                                                success: function () {
+                                                    userTable.fnFilter();
+                                                }
+                                            });
+                                        }
+                                    });
+                                }
+                            },
+                            main: {
+                                label: '取消',
+                                className: "btn-sm btn-default",
+                                callback: null
+                            }
+                        }
+                    });
+                } else {
+                    bootbox.dialog({
+                        title: "警告",
+                        message: "请选择",
+                        buttons: {
+                            success: {
+                                label: "确定",
+                                className: "btn-sm btn-danger"
+                            }
+                        }
+                    });
+                }
+            });
+
+        })
+    });
+</script>

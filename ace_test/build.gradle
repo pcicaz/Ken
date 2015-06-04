@@ -1,0 +1,58 @@
+apply plugin: 'war'
+apply plugin: 'com.bmuschko.tomcat'
+
+repositories {
+    mavenCentral()
+    maven {
+//        url 'http://lib.csczn.com:8081/content/groups/public/'
+        url 'http://maven.oschina.net/content/groups/public/'
+    }
+}
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.bmuschko:gradle-tomcat-plugin:2.2.2'
+    }
+}
+
+
+tomcat {
+    contextPath = '/'
+    httpPort = 9080
+    ajpPort = 9009
+//    httpsPort = 8443
+//    enableSSL = true
+    stopPort = 9005
+    stopKey = 'stopKey'
+}
+
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+dependencies {
+    def tomcatVersion = '7.0.59'
+    tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
+           "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatVersion}",
+           "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
+
+    compile(
+            'com.fasterxml.jackson.core:jackson-core:2.1.4',
+            'com.fasterxml.jackson.core:jackson-databind:2.1.4',
+            'org.springframework:spring-webmvc:3.2.9.RELEASE',
+            'cglib:cglib:3.1',
+            'commons-lang:commons-lang:2.6',
+            'com.thoughtworks.proxytoys:proxytoys:1.0',
+            'org.mongodb.morphia:morphia:1.0.0-rc0'
+    )
+
+    providedCompile(
+            'javax.servlet.jsp:jsp-api:2.2',
+            'javax.servlet.jsp:javax.servlet.jsp-api:2.3.1',
+            'javax.servlet:javax.servlet-api:3.1.0'
+    )
+
+    testCompile group: 'junit', name: 'junit', version: '4.+'
+}
